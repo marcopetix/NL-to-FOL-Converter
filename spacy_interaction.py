@@ -9,6 +9,17 @@ def spacy_parsing(text):
 
 def spacy_parsing_coref(text):
     doc = nlp(text)
+    print("{:<50}{:<150}".format("Sentence inserted by the user: ", doc.text))
+    if doc._.has_coref:
+        print("{:<50}{:<150}".format("Mentions clusters", str(doc._.coref_clusters)))
+        new_doc = str(doc._.coref_resolved)
+        print("{:<50}{:<150}".format("Sentence altered by Neuralcoref: ", new_doc))
+        return nlp(new_doc)
+    else:
+        return doc
+
+def spacy_parsing_coref_poss(text):
+    doc = nlp(text)
     if doc._.has_coref:
         poss_clusters = []
         for x in doc._.coref_clusters:

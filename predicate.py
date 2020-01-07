@@ -4,9 +4,10 @@ pos_verbs = library.pos_verbs
 dep_modifiers = library.dep_modifiers
 
 class Predicate:
-    def __init__(self, main_token, dep_token, subj_token = None, obj_token = None, prefix_token = None):
+    def __init__(self, main_token, contatore, dep_token, subj_token = None, obj_token = None, prefix_token = None):
         self.main_token = main_token
         self.dep_token = dep_token
+        self.contatore = contatore
 
         if subj_token is None:
             self.subj_token_list = []
@@ -35,8 +36,12 @@ class Predicate:
             for pre_token in self.prefix_token_list:
                 predicate += library.get_lemma(pre_token, cond_tokens) + ":" + pre_token.tag_ + "_"
 
-        predicate += library.get_lemma(self.main_token, cond_tokens) + ":"
-        predicate += self.main_token.tag_
+        predicate += library.get_lemma(self.main_token, cond_tokens)
+
+        if self.contatore != "":
+            predicate += str(self.contatore).zfill(2)
+
+        predicate += ":" + self.main_token.tag_
 
         predicate += "(" + library.get_var(self.dep_token, variables, predicates, num_of_terms)
 
@@ -80,7 +85,11 @@ class Predicate:
             for pre_token in self.prefix_token_list:
                 label += library.get_lemma(pre_token, cond_tokens) + ":" + pre_token.tag_ + "_"
 
-        label += library.get_lemma(self.main_token, cond_tokens) + ":"
-        label += self.main_token.tag_
+        label += library.get_lemma(self.main_token, cond_tokens)
+
+        if self.contatore != "":
+            predicate += str(self.contatore).zfill(2)
+
+        label += ":" + self.main_token.tag_
 
         return label

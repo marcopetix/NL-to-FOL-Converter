@@ -1,10 +1,8 @@
 pos_verbs = ["BES", "HVS", "MD", "VB", "VBD", "VBN", "VBP", "VBZ", "VBG"]
-dep_modifiers = ['amod', "advmod", "npadvmod", "nmod", "nummod", "npmod", "quantmod", "oprd"]
+dep_modifiers = ["amod", "advmod", "npadvmod", "nmod", "nummod", "npmod", "quantmod", "oprd"]
 
 import predicate as Predicate
 import variable as Variable
-
-
 
 def same_lemma_tag(token_a, token_b):
     return token_a.lemma_ == token_b.lemma_ and token_a.tag_ == token_b.tag_
@@ -21,6 +19,16 @@ def get_lemma(token, cond_tokens):
     #    lemma += "('s)"
     return lemma
 
+def get_occurrance_number(predicates, target_token):
+    if target_token.dep_ not in dep_modifiers:
+        occ_number = 1
+        for predicate in predicates:
+            if predicate.main_token.lemma_ == target_token.lemma_:
+                occ_number += 1
+    else:
+        occ_number = ""
+    return occ_number
+
 def get_predicate(target_token, predicates):
     for predicate in predicates:
         if target_token == predicate.main_token:
@@ -30,10 +38,10 @@ def get_predicate(target_token, predicates):
 
 def make_mono_predicate(token, predicates):
     if get_predicate(token, predicates) is None and (token.tag_ not in pos_verbs or (token.tag_ == "VBG" and token.dep_ in dep_modifiers)):
-        predicates.append(Predicate.Predicate(token, token))
+        predicates.append(Predicate.Predicate(token, get_occurrance_number(predicates, token), token))
 
 def make_predicate(predicates, main_token, dep_token, subj_token = None, obj_token = None, prefix_token = None):
-    predicates.append(Predicate.Predicate(main_token, dep_token, subj_token, obj_token, prefix_token))
+    predicates.append(Predicate.Predicate(main_token, get_occurrance_number(predicates, main_token), dep_token, subj_token, obj_token, prefix_token))
 
 def name_var(token, num_of_terms):
     if token.tag_ in pos_verbs and token.dep_ is not "pobj":
@@ -103,6 +111,13 @@ def add_to_prefix(token_to_add, target_token, predicates):
             return True
     return False
 
+def add_to_suffix(token_to_add, target_token, predicates):
+    for predicate in predicates:
+        if target_token == predicate.main_token:
+            predicate.suffix_token_list.append(token_to_add)
+            return True
+    return False
+
 def until_not(dep, token):
     result_token = token
     while result_token.dep_ is dep:
@@ -111,31 +126,30 @@ def until_not(dep, token):
 
 def print_table(doc):
     print("\n")
-    print("{:<10}{:<15}{:<15}{:<15}{:<10}{:<15}{:<10}".format("ID", "TEXT", "DEPENDENCY", "HEAD", "ID_HEAD", "LEMMA", "POS"))
+    print("{:<10}{:<15}{:<15}{:<15}{:<10}{:<15}{:<10}{:<10}".format(" ID", "TEXT", "DEPENDENCY", "HEAD", "ID_HEAD", "LEMMA", "POS", "TAG"))
     for token in doc:
-        print("{:<10}{:<15}{:<15}{:<15}{:<10}{:<15}{:<10}".format(token.i, token.text, token.dep_, token.head.lemma_, token.head.i, token.lemma_, token.tag_))
+        print("{:<10}{:<15}{:<15}{:<15}{:<10}{:<15}{:<10}{:<10}".format(" " + str(token.i), token.text, token.dep_, token.head.lemma_, token.head.i, token.lemma_, token.pos_, token.tag_))
 
 def print_predicates(variables, predicates, num_of_terms, cond_tokens):
     print("\n")
-    print("PREDICATES:\n")
+    print(" PREDICATES:\n")
     for x in predicates:
-        print(x.to_formula(variables, predicates, num_of_terms, cond_tokens))
+        print(" " + x.to_formula(variables, predicates, num_of_terms, cond_tokens))
 
 def print_variables(variables):
     print("\n")
-    print("VARIABLES:\n")
+    print(" VARIABLES:\n")
     for x in variables:
-        print(x.to_print())
+        print(" " + x.to_print())
 
 def print_isa(isa_tokens):
     print("\n")
-    print("ISA TOKENS:\n")
+    print(" ISA TOKENS:\n")
     for x in isa_tokens:
-        print(x.lemma_ + str(x.i))
-
+        print(" " + x.lemma_ + str(x.i))
 
 def output(text, doc, predicates, variables, num_of_terms, cond_tokens, isa_tokens):
-    print("\n{:<20}{:<150}".format("Text: ", text))
+    print("\n{:<7}{:<150}".format(" Text: ", text))
     print_table(doc)
     print_predicates(variables, predicates, num_of_terms, cond_tokens)
     print_variables(variables)

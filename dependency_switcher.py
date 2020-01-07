@@ -56,7 +56,11 @@ def dep_conj(token, variables, predicates, cond_tokens, passive_tokens, num_of_t
     token_predicate = library.get_predicate(token, predicates)
     target_predicate = library.get_predicate(target_token, predicates)
     conj_head = library.until_not("conj", token)
-    if conj_head.dep_ == "ROOT" or conj_head.dep_ is "relcl" or conj_head.dep_ is "advcl": #NON PUò CONSIDERARE I CASI COME "TRUMP HAS BEEN JUDGED GUILTY AND TAKEN TO PRISON" O "TRUMP HAS BEEN JUDGED GUILTY AND NOW IS IN PRISON"  (PROVARE AD USARE IL TAG_ DEL VERBO)
+    if conj_head.dep_ is "xcomp":
+        if not library.add_to_prefix(conj_head.head, token, predicates):
+            head_predicate = library.get_predicate(library.until_not("xcomp", conj_head), predicates)
+            library.make_predicate(predicates, token, token, head_predicate.subj_token_list, None, None, conj_head.head) #MANCA UNA SUFFIX LIST
+    elif conj_head.dep_ == "ROOT" or conj_head.dep_ is "relcl" or conj_head.dep_ is "advcl" or conj_head.tag_ in library.pos_verbs: #NON PUò CONSIDERARE I CASI COME "TRUMP HAS BEEN JUDGED GUILTY AND TAKEN TO PRISON" O "TRUMP HAS BEEN JUDGED GUILTY AND NOW IS IN PRISON"  (PROVARE AD USARE IL TAG_ DEL VERBO)
         for cond_token in cond_tokens:
             cond_predicate = library.get_predicate(cond_token, predicates)
             if cond_predicate.dep_token == conj_head:
@@ -71,11 +75,7 @@ def dep_conj(token, variables, predicates, cond_tokens, passive_tokens, num_of_t
             if target_token in passive_tokens:
                 library.make_predicate(predicates, token, token, None, target_predicate.obj_token_list)
             else:
-                library.make_predicate(predicates, token, token, None, target_predicate.subj_token_list)
-    elif conj_head.dep_ is "xcomp":
-        if not library.add_to_prefix(conj_head.head, token, predicates):
-            head_predicate = library.get_predicate(until_not("xcomp", conj_head), predicates)
-            library.make_predicate(predicates, token, token, head_predicate.subj_token_list, None, None, conj_head.head)
+                library.make_predicate(predicates, token, token, target_predicate.subj_token_list, None)
     elif conj_head.dep_ is "attr" or target_token.dep_ is "nsubj" or target_token.dep_ is "nsubjpass" or target_token.dep_ is "dobj" or target_token.dep_ is "acomp":
         library.add_to_same_var_list(target_token, token, variables, predicates, num_of_terms)
     elif conj_head.dep_ in dep_modifiers:
@@ -183,7 +183,7 @@ def dep_pobj(token, variables, predicates, cond_tokens, passive_tokens, num_of_t
         elif prep_head.dep_ is "xcomp":
             prep_head = library.until_not("xcomp", prep_head)
         #elif prep_head.dep_ is "conj":
-        #    prep_head = until_not("conj", prep_head)
+        #    prep_head = library.until_not("conj", prep_head)
         if prep_token.dep_ is "agent":
             library.add_to_subj_list(token, prep_head, variables, predicates, num_of_terms)
             while prep_head.dep_ is "conj" and prep_head.head in passive_tokens:
@@ -207,7 +207,10 @@ def dep_relcl(token, variables, predicates, cond_tokens, passive_tokens, num_of_
 
 def dep_root(token, variables, predicates, cond_tokens, passive_tokens, num_of_terms, isa_tokens):
     if token.lemma_ == "be":
-        isa_tokens.append(token)
+        for child in token.children:
+            if child.dep_ == "attr":
+                isa_tokens.append(token)
+                break
     elif token.lemma_ == "make":
         for child in token.children:
             if child.text == "of" or child.text == "by":

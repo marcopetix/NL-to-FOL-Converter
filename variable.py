@@ -6,6 +6,6 @@ class Variable:
     def to_print(self):
         variable = self.var + ": ["
         for token in self.token_list:
-            variable += str(token.i) + "-" + token.lemma_ + " | "
+            variable += str(token.i) + "-" + token.lemma_ + "  "
         variable += "]"
         return variable

@@ -20,15 +20,16 @@ Key features include:
 ---
 
 ## 🏗️ Project Structure
-├── dependency_switcher.py \
-├── entity.py \
-├── library.py \
-├── mongo.py \
-├── named_entity_recognition.py \
-├── parser.py \
-├── predicate.py \
-├── spacy_interaction.py \
-├── variable.py \
+├── src/    \
+│ ├── dependency_switcher.py \
+│ ├── entity.py\
+│ ├── library.py \
+│ ├── mongo.py \
+│ ├── named_entity_recognition.py \
+│ ├── parser.py \
+│ ├── predicate.py \
+│ ├── spacy_interaction.py \
+│ └── variable.py \
 ├── A_parser_for_text_to_First_order_Logic_c.pdf (thesis report) \
 └── README.md
 
